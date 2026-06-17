@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -23,15 +28,17 @@ st.title("📊 Sales Analytics Dashboard")
 # -------------------------
 # LOAD DATA
 # -------------------------
-df = pd.read_csv("data/sales_data.csv")
 
-# Clean data
-df = clean_sales_data(df)
+@st.cache_data
+def load_data():
+    df = pd.read_csv("data/sales_data.csv")
+    df = clean_sales_data(df)
+    return df
 
-
+df = load_data()
 
 # -------------------------
-# NAVIGATION
+# NAVIGATION + FILTERS
 # -------------------------
 st.sidebar.title("🔎 Filters")
 
@@ -52,6 +59,24 @@ product_filter = st.sidebar.multiselect(
     default=df["Product"].unique()
 )
 
+# Date range filter
+min_date = df["Date"].min()
+max_date = df["Date"].max()
+
+date_range = st.sidebar.date_input(
+    "Date Range",
+    value=(min_date, max_date)
+)
+
+# Apply filters
+start_date, end_date = date_range
+
+df = df[
+    (df["Region"].isin(region_filter)) &
+    (df["Product"].isin(product_filter)) &
+    (df["Date"] >= pd.to_datetime(start_date)) &
+    (df["Date"] <= pd.to_datetime(end_date))
+]
 df = df[
     (df["Region"].isin(region_filter)) &
     (df["Product"].isin(product_filter))
@@ -70,11 +95,40 @@ customer_summary = calculate_clv(customer_summary)
 if page == "Overview":
     st.header("Overview Metrics")
 
-    st.metric("Total Revenue", f"{df['Revenue'].sum():,.2f}")
-    st.metric("Total Profit", f"{df['Profit'].sum():,.2f}")
-    st.metric("Total Orders", len(df))
+    col1, col2, col3, col4, col5 = st.columns(5)
 
-    # TOP CUSTOMERS (Plotly - interactive)
+    total_revenue = df["Revenue"].sum()
+    total_profit = df["Profit"].sum()
+    profit_margin = (total_profit / total_revenue) * 100
+    average_order_value = total_revenue / len(df)
+
+
+    with col1:
+        st.metric("Total Revenue", f"{total_revenue:,.2f}")
+
+    with col2:
+        st.metric("Total Profit", f"{total_profit:,.2f}")
+
+    with col3:
+        st.metric("Total Orders", len(df))
+
+    with col4:
+        st.metric("Profit Margin (%)", f"{profit_margin:.2f}%")
+
+    with col5:
+        st.metric("Average Order Value", f"{average_order_value:,.2f}")
+
+    # Download filtered data
+    st.download_button(
+        label="📥 Download Filtered Data (CSV)",
+        data=df.to_csv(index=False).encode("utf-8"),
+        file_name="filtered_sales_data.csv",
+        mime="text/csv"
+    )
+
+    # -------------------------
+    # Top Customers chart
+    # -------------------------
     top_customers = (
         customer_summary.groupby("Customer_ID")["Total_Revenue"]
         .sum()
@@ -89,7 +143,162 @@ if page == "Overview":
         title="Top 10 Customers by Revenue"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key="top_customers_chart"
+    )
+
+
+    # -------------------------
+    # Revenue Over Time chart
+    # -------------------------
+    revenue_over_time = (
+        df.groupby("Date")["Revenue"]
+        .sum()
+        .reset_index()
+    )
+
+    fig_time = px.line(
+        revenue_over_time,
+        x="Date",
+        y="Revenue",
+        title="Revenue Over Time"
+    )
+
+    st.plotly_chart(
+        fig_time,
+        use_container_width=True,
+        key="revenue_time_chart"
+    )
+    # -------------------------
+    # Profit Over Time chart
+    # -------------------------
+    profit_over_time = (
+        df.groupby("Date")["Profit"]
+        .sum()
+        .reset_index()
+    )
+
+    fig_profit = px.line(
+        profit_over_time,
+        x="Date",
+        y="Profit",
+        title="Profit Over Time"
+    )
+
+    st.plotly_chart(
+        fig_profit,
+        use_container_width=True,
+        key="profit_time_chart"
+    )
+
+    # -------------------------
+    # Revenue vs Profit (Combined)
+    # -------------------------
+    combined_metrics = (
+        df.groupby("Date")[["Revenue", "Profit"]]
+        .sum()
+        .reset_index()
+    )
+
+    fig_combined = px.line(
+        combined_metrics,
+        x="Date",
+        y=["Revenue", "Profit"],
+        title="Revenue vs Profit Over Time"
+    )
+
+    st.plotly_chart(
+        fig_combined,
+        use_container_width=True,
+        key="combined_revenue_profit_chart"
+    )
+
+    # -------------------------
+    # Best Selling Products
+    # -------------------------
+    top_products = (
+        df.groupby("Product")["Revenue"]
+        .sum()
+        .nlargest(10)
+        .reset_index()
+    )
+
+    fig_products = px.bar(
+        top_products,
+        x="Product",
+        y="Revenue",
+        title="Top 10 Products by Revenue"
+    )
+
+    st.plotly_chart(
+        fig_products,
+        use_container_width=True,
+        key="top_products_chart"
+    )
+    # -------------------------
+    # Top Regions by Revenue
+    # -------------------------
+    region_sales = (
+        df.groupby("Region")["Revenue"]
+        .sum()
+        .reset_index()
+    )
+
+    fig_regions = px.bar(
+        region_sales,
+        x="Region",
+        y="Revenue",
+        title="Revenue by Region"
+    )
+
+    st.plotly_chart(
+        fig_regions,
+        use_container_width=True,
+        key="region_revenue_chart"
+    )
+    # Download filtered data
+    st.download_button(
+        label="📥 Download Filtered Data (CSV)",
+        data=df.to_csv(index=False).encode("utf-8"),
+        file_name="filtered_sales_data.csv",
+        mime="text/csv",
+        key="download_filtered_csv"
+    )
+    # Top customers chart
+    top_customers = (
+        customer_summary.groupby("Customer_ID")["Total_Revenue"]
+        .sum()
+        .nlargest(10)
+        .reset_index()
+    )
+
+    fig = px.bar(
+        top_customers,
+        x="Customer_ID",
+        y="Total_Revenue",
+        title="Top 10 Customers by Revenue"
+    )
+
+
+# -------------------------------
+# TOP CUSTOMERS (Plotly - interactive)
+# ------------------------
+    top_customers = (
+        customer_summary.groupby("Customer_ID")["Total_Revenue"]
+        .sum()
+        .nlargest(10)
+        .reset_index()
+    )
+
+    fig = px.bar(
+        top_customers,
+        x="Customer_ID",
+        y="Total_Revenue",
+        title="Top 10 Customers by Revenue"
+    )
+
 
 
 # -------------------------

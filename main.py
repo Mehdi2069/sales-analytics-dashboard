@@ -12,6 +12,9 @@ from scripts.insights import generate_insights
 
 # Load data
 df = pd.read_csv("data/sales_data.csv")
+print("DATE DEBUG")
+print(df["Date"].dtype)
+print(df["Date"].head())
 
 # Audit raw data
 audit_data(df)
