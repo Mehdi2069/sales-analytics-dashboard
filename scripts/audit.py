@@ -1,8 +1,14 @@
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    raise ImportError(
+        "pandas is required to run audit_data. Install it with: pip install pandas"
+    )
 
 def audit_data(df):
     print("\n--- DATA INFO ---")
-    print(df.info())
+    # df.info() prints directly; avoid printing its None return value
+    df.info()
 
     print("\n--- MISSING VALUES ---")
     print(df.isnull().sum())
