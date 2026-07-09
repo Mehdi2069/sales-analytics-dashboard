@@ -17,6 +17,9 @@ from scripts.customer_visualize import (
 from scripts.repeat_customers import analyze_repeat_customers
 from scripts.customer_lifetime_value import calculate_clv
 from scripts.insights import generate_insights
+from authentication.logout import logout
+from authentication.permissions import has_permission
+
 
 def main():
     # -------------------------
@@ -24,6 +27,21 @@ def main():
     # -------------------------
     st.set_page_config(page_title="Sales Analytics Dashboard", layout="wide")
     st.title("📊 Sales Analytics Dashboard")
+    # -------------------------
+    # USER ACCOUNT
+    # -------------------------
+
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("👤 Account")
+
+    user = st.session_state.user
+
+    st.sidebar.write(f"**User:** {user['username']}")
+    st.sidebar.write(f"**Role:** {user['role']}")
+    st.sidebar.write(f"**Region:** {user['region']}")
+
+    if st.sidebar.button("🚪 Logout"):
+        logout()
 
 
     # -------------------------
@@ -46,10 +64,20 @@ def main():
 # -------------------------
     st.sidebar.title("🔎 Filters")
 
+    pages = [
+        "Overview",
+        "Customers",
+        "Insights"
+    ]
+
+    # Only Admins see User Management
+    if has_permission(st.session_state.user["role"], "user_management"):
+        pages.append("User Management")
+
     page = st.sidebar.selectbox(
         "Navigate",
-        ["Overview", "Customers", "Insights"]
-    )
+        pages)
+    
 
     region_filter = st.sidebar.multiselect(
         "Region",
@@ -314,6 +342,29 @@ def main():
 
         st.subheader("Customer Lifetime Value")
         st.pyplot(visualize_clv(customer_summary))
+
+    # -------------------------
+    # INSIGHTS PAGE
+    # -------------------------
+    elif page == "Insights":
+
+        st.header("📊 Business Insights")
+
+        st.metric("Total Revenue", f"{df['Revenue'].sum():,.2f}")
+        st.metric("Total Profit", f"{df['Profit'].sum():,.2f}")
+        st.metric("Total Orders", len(df))
+
+    # -------------------------
+    # USER MANAGEMENT PAGE
+    # -------------------------
+    elif page == "User Management":
+
+        st.header("👥 User Management")
+
+        st.info("This page will allow administrators to manage users.")
+
+        st.write("🚧 Under construction...")
+
 
     
 if __name__ == "__main__":

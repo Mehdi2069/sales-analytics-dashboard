@@ -1,4 +1,5 @@
 import pandas as pd
+from authentication import logout
 from scripts.audit import audit_data
 from scripts.clean import clean_sales_data
 from scripts.analysis import analyze_sales
@@ -10,6 +11,19 @@ from scripts.customer_lifetime_value import calculate_clv
 from scripts.customer_visualize import (visualize_customer_segments, visualize_top_customers, visualize_clv)
 from scripts.insights import generate_insights
 
+st.sidebar.markdown("---")
+st.sidebar.subheader("Account") 
+
+user = st.session_state.user
+
+st.sidebar.write(f"**User:**{user['username']}")
+st.sidebar.write(f"**Role:** {user['role']}")
+st.sidebar.write(f"**Region:** {user['region']}")
+
+
+if st.sidebar.button("🚪 Logout"):
+    logout()
+    
 # Load data
 df = pd.read_csv("data/sales_data.csv")
 print("DATE DEBUG")
