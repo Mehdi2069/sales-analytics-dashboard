@@ -19,6 +19,7 @@ from scripts.customer_lifetime_value import calculate_clv
 from scripts.insights import generate_insights
 from authentication.logout import logout
 from authentication.permissions import has_permission
+from app_1.user_management import user_management_page
 
 
 def main():
@@ -359,11 +360,7 @@ def main():
     # -------------------------
     elif page == "User Management":
 
-        st.header("👥 User Management")
-
-        st.info("This page will allow administrators to manage users.")
-
-        st.write("🚧 Under construction...")
+        user_management_page()
 
 
     
