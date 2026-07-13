@@ -2,13 +2,14 @@ import sqlite3
 
 from authentication.password_utils import verify_password
 
+from config.paths import DB_PATH
 
 def authenticate(username, password):
     """
     Authenticate a user against the SQLite database.
     """
 
-    conn = sqlite3.connect("authentication/users.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute(

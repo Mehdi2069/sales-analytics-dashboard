@@ -1,3 +1,4 @@
+from os import name
 import sqlite3
 from pathlib import Path
 import pandas as pd
@@ -5,8 +6,7 @@ import streamlit as st
 from authentication.password_utils import hash_password
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-DB_PATH = BASE_DIR / "authentication" / "users.db"
+from config.paths import DB_PATH
 
 @st.cache_data
 
@@ -30,8 +30,7 @@ def load_users():
 
 def create_user(username, password, role, region, active):
     '''Create a new user in the SQLite database.'''
-    hashed_password = hash_password(password)
-
+   
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -41,7 +40,6 @@ def create_user(username, password, role, region, active):
     existing_user = cursor.fetchone()
 
     if existing_user:
-        st.error("❌ Username already exists!")
         conn.close()
         return False    
     # Hash the password
@@ -55,6 +53,47 @@ def create_user(username, password, role, region, active):
 
     conn.commit()
     conn.close()
+
+    return True
+
+def load_user_details(username):
+    '''Load user details from the SQLite database.'''
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, username, role, region, active
+        FROM users
+        WHERE username = ?
+    """, (username,))
+
+    user_details = cursor.fetchone()
+    conn.close()
+
+    if user_details is None:
+        return None
+    return {
+        "id": user_details[0],
+        "username": user_details[1],
+        "role": user_details[2],
+        "region": user_details[3],
+        "active": bool(user_details[4])
+    }
+
+def update_user(user_id, role, region, active):
+    '''Update an existing user in the SQLite database.'''
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE users
+        SET role = ?, region = ?, active = ?
+        WHERE id = ?
+    """, (role, region, int(active), user_id))
+
+    conn.commit()
+    conn.close()
+
 def user_management_page():
     '''Display the User Management page.'''
 
@@ -93,8 +132,32 @@ def user_management_page():
         else:
             st.error("❌ Username already exists. Please choose a different username.")
       
-    st.rerun()
+    st.markdown("---")
+    st.subheader("✏️ Edit User")
+   
+    users = load_users()
+    
+    selected_username = st.selectbox("Select User to Edit", users["username"]) 
+    user = load_user_details(selected_username)
+    user_id = user["id"]  # Get the user ID for updating
 
+    roles = ['Admin', 'Manager', 'Analyst', 'Viewer']
+
+    regions = ['All', 'Europe', 'North America', 'Asia', 'South America']
+
+    edit_role = st.selectbox("Role", roles, index=roles.index(user["role"]))
+
+    edit_region = st.selectbox("Region", regions, index=regions.index(user["region"]))
+
+    edit_active = st.checkbox("Active", value=user["active"])
+
+    update_button = st.button("Update User")
+
+    if update_button:
+        update_user(user_id, edit_role, edit_region, edit_active)
+        st.cache_data.clear()  # Clear the cache to reload users
+        st.success("✅ User updated successfully!")
+        st.rerun()  # Rerun the app to reflect the updated user details
 
        
 

@@ -8,6 +8,8 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
+from config.paths import DATA_PATH
+
 from scripts.clean import clean_sales_data
 from scripts.customer_segmentation import segment_customers
 from scripts.customer_visualize import (
@@ -48,9 +50,6 @@ def main():
     # -------------------------
     # LOAD DATA
     # -------------------------
-    BASE_DIR = Path(__file__).resolve().parents[1]
-    DATA_PATH = BASE_DIR / "data" / "sales_data.csv"
-
     @st.cache_data
     def load_data():
         df = pd.read_csv(DATA_PATH)
