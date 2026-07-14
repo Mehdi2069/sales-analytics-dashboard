@@ -1,6 +1,7 @@
 import sys
 import os
 from pathlib import Path
+from authentication.data_permissions import filter_data_by_user
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -57,6 +58,19 @@ def main():
         return df
 
     df = load_data()        
+
+    # -------------------------
+    # ROW-LEVEL SECURITY
+    # -------------------------
+
+    df = filter_data_by_user(df, st.session_state.user)
+
+    # -------------------------
+    # SIDEBAR FILTERS
+    # -------------------------
+
+
+
 
 
 # -------------------------
