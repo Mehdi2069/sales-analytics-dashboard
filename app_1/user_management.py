@@ -94,6 +94,17 @@ def update_user(user_id, role, region, active):
     conn.commit()
     conn.close()
 
+def delete_user(user_id):
+    '''Delete a user from the SQLite database.'''
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+    conn.commit()
+    conn.close()
+
+
 def user_management_page():
     '''Display the User Management page.'''
 
@@ -158,6 +169,27 @@ def user_management_page():
         st.cache_data.clear()  # Clear the cache to reload users
         st.success("✅ User updated successfully!")
         st.rerun()  # Rerun the app to reflect the updated user details
+
+
+
+    st.markdown("---")
+    st.subheader("🗑️ Delete User")
+
+    if st.button("🗑️ Delete User"):
+        if selected_username == st.session_state.user["username"]:
+            st.error("❌ You cannot delete your own account.")
+
+        elif user["role"] == 'Admin':
+            st.error("❌ You cannot delete an Admin user.")
+        else:
+            delete_user(user_id)
+            st.cache_data.clear()  # Clear the cache to reload users
+            st.success("✅ User deleted successfully!")
+            st.rerun()  # Rerun the app to reflect the updated user list
+
+ 
+   
+
 
        
 
