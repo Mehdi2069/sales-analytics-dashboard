@@ -23,6 +23,9 @@ from scripts.insights import generate_insights
 from authentication.logout import logout
 from authentication.permissions import has_permission
 from app_1.user_management import user_management_page
+from reports.export_excel import export_to_excel
+
+
 
 
 def main():
@@ -160,14 +163,6 @@ def main():
         with col5:
             st.metric("Average Order Value", f"{average_order_value:,.2f}")
 
-    # Download filtered data
-        st.download_button(
-            label="📥 Download Filtered Data (CSV)",
-            data=df.to_csv(index=False).encode("utf-8"),
-            file_name="filtered_sales_data.csv",
-            mime="text/csv"
-        )
-
         # -------------------------
         # Top Customers chart
         # -------------------------
@@ -300,14 +295,30 @@ def main():
             width="stretch",
             key="region_revenue_chart"
         )
-        # Download filtered data
+        
+# -------------------------
+# EXPORT REPORTS
+# -------------------------
+        st.markdown("---")
+        st.subheader("📥 Export Reports")
+        
         st.download_button(
-            label="📥 Download Filtered Data (CSV)",
+            label="📄 Export to CSV ",
             data=df.to_csv(index=False).encode("utf-8"),
             file_name="filtered_sales_data.csv",
             mime="text/csv",
             key="download_filtered_csv"
         )
+
+        excel_file = export_to_excel(df)
+        st.download_button(
+            label=" 📊 Export to Excel ",
+            data=excel_file,
+            file_name="filtered_sales_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_filtered_excel"
+        )
+
         # Top customers chart
         top_customers = (
             customer_summary.groupby("Customer_ID")["Total_Revenue"]
