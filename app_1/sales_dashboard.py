@@ -24,6 +24,8 @@ from authentication.logout import logout
 from authentication.permissions import has_permission
 from app_1.user_management import user_management_page
 from reports.export_excel import export_to_excel
+from reports.export_pdf import export_to_pdf
+
 
 
 
@@ -146,22 +148,42 @@ def main():
         total_profit = df["Profit"].sum()
         profit_margin = (total_profit / total_revenue) * 100
         average_order_value = total_revenue / len(df)
+        total_orders = len(df)
 
 
         with col1:
-            st.metric("Total Revenue", f"{total_revenue:,.2f}")
+            st.metric("💰 Total Revenue",  f"${total_revenue:,.2f}")
 
         with col2:
-            st.metric("Total Profit", f"{total_profit:,.2f}")
+            st.metric("📈 Total Profit", f"${total_profit:,.2f}")
 
         with col3:
-            st.metric("Total Orders", len(df))
+            st.metric("🛒 Total Orders", f"{total_orders:,}")
 
         with col4:
-            st.metric("Profit Margin (%)", f"{profit_margin:.2f}%")
+            st.metric("📊 Profit Margin", f"{profit_margin:.2f}%")
 
         with col5:
-            st.metric("Average Order Value", f"{average_order_value:,.2f}")
+            st.metric("💳 Average Order Value", f"${average_order_value:,.2f}")
+    
+
+    # -------------------------
+    # Create PDF file for download
+    # -------------------------
+
+        pdf_file = export_to_pdf(
+            user=st.session_state.user,
+            total_revenue=total_revenue,
+            total_profit=total_profit,
+            total_orders=total_orders,
+            profit_margin=profit_margin,
+            average_order_value=average_order_value, 
+            selected_region=region_filter,
+            selected_products=product_filter,
+            start_date=start_date,
+            end_date=end_date
+        )
+
 
         # -------------------------
         # Top Customers chart
@@ -319,6 +341,15 @@ def main():
             key="download_filtered_excel"
         )
 
+        st.download_button(
+            label=" 📄 📑 Export to PDF ",
+            data=pdf_file,
+            file_name="sales_analytics_report.pdf",
+            mime="application/pdf",
+            key="download_filtered_pdf"
+        )
+
+
         # Top customers chart
         top_customers = (
             customer_summary.groupby("Customer_ID")["Total_Revenue"]
@@ -385,6 +416,8 @@ def main():
     elif page == "User Management":
 
         user_management_page()
+    
+
 
 
     
