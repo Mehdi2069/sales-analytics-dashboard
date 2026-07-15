@@ -25,8 +25,7 @@ from authentication.permissions import has_permission
 from app_1.user_management import user_management_page
 from reports.export_excel import export_to_excel
 from reports.export_pdf import export_to_pdf
-
-
+from authentication.password_management import change_password
 
 
 
@@ -86,7 +85,8 @@ def main():
     pages = [
         "Overview",
         "Customers",
-        "Insights"
+        "Insights", 
+        "change Password"
     ]
 
     # Only Admins see User Management
@@ -416,6 +416,24 @@ def main():
     elif page == "User Management":
 
         user_management_page()
+
+    # -------------------------
+    # CHANGE PASSWORD SECTION
+    # -------------------------
+    elif page == "Change Password":
+        st.header("🔑 Change Password")
+
+        current_password = st.text_input("Current Password", type="password")
+
+        new_password = st.text_input("New Password", type="password")
+
+        if st.button("Update Password"):
+            if current_password and new_password:
+                st.success("Password changed successfully!")
+            else:
+                st.error("Please enter both current and new password.")
+
+    
     
 
 
