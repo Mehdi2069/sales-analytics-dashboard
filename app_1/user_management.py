@@ -94,6 +94,48 @@ def update_user(user_id, role, region, active):
     conn.commit()
     conn.close()
 
+def reset_user_password(username, new_password):
+    ''' Reset a user's password by an administrator. 
+    The users will be foced to change the password at next login. '''
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Check if user exists
+    cursor.execute(
+                """ 
+                   SELECT username 
+                   FROM users 
+                   WHERE username =?
+                    """, 
+                    (username,))
+    
+    user = cursor.fetchone()
+
+    if user is None:
+        conn.close()
+        return False, "User not found."
+    
+    # Hash the new password
+    new_password_hash = hash_password(new_password)
+
+    # Update password and force change on next login    
+
+    cursor.execute(
+        """ 
+        UPDATE users
+        SET password = ?,
+            force_password_change = 1
+        WHERE username = ?
+        """,
+        (new_password_hash, username)
+    )
+    conn.commit()
+    conn.close()
+    return True, "Password reset successfully." 
+
+    
+
 def delete_user(user_id):
     '''Delete a user from the SQLite database.'''
     conn = sqlite3.connect(DB_PATH)
