@@ -25,7 +25,7 @@ from authentication.permissions import has_permission
 from app_1.user_management import user_management_page
 from reports.export_excel import export_to_excel
 from reports.export_pdf import export_to_pdf
-from authentication.password_management import change_password
+from authentication.password_management import change_my_password
 
 
 
@@ -86,8 +86,9 @@ def main():
         "Overview",
         "Customers",
         "Insights", 
-        "change Password"
+        "Change Password"
     ]
+    
 
     # Only Admins see User Management
     if has_permission(st.session_state.user["role"], "user_management"):
@@ -421,20 +422,46 @@ def main():
     # CHANGE PASSWORD SECTION
     # -------------------------
     elif page == "Change Password":
-        st.header("🔑 Change Password")
+        st.header("🔑 Change My Password")
+
+        st.info("Enter your current password, then choose a new password,")
+        st.warning("🔒 For your security, do not share your password with others.")
+        
 
         current_password = st.text_input("Current Password", type="password")
 
+        st.caption("Password requirements: at least 8 characters," 
+                   "one uppercase letter, one lowercase letter, and one number.")
+        
         new_password = st.text_input("New Password", type="password")
 
+        confirm_password = st.text_input("Confirm New Password", type = "password")
+        
+ 
         if st.button("Update Password"):
-            if current_password and new_password:
-                st.success("Password changed successfully!")
-            else:
-                st.error("Please enter both current and new password.")
+            # Check if all fields are completed 
+            if not current_password or not new_password or not confirm_password:
+                st.error ("❌ Please complete all fields.")
+            
+            # Check that the new password match
+            elif new_password != confirm_password:
+                st.error("❌ New passwords do not match.")
 
-    
-    
+            # Call the backend 
+
+            else:
+
+                success, message = change_my_password(st.session_state.user["username"], 
+                                                      current_password, new_password)
+                
+                if success:
+                    st.success(message)
+                
+                else:
+                    st.error(message)
+
+            
+ 
 
 
 

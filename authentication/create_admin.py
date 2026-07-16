@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     role TEXT NOT NULL,
     region TEXT NOT NULL,
-    active INTEGER NOT NULL DEFAULT 1
+    active INTEGER NOT NULL DEFAULT 1,
+    force_password_change INTEGER NOT NULL DEFAULT 0
 )
 """)
 
@@ -20,17 +21,19 @@ admin_password = hash_password("Admin123!")
 
 cursor.execute("""
 INSERT OR IGNORE INTO users
-(username, password, role, region, active)
-VALUES (?, ?, ?, ?, ?)
+(username, password, role, region, active, force_password_change)
+VALUES (?, ?, ?, ?, ?, ?)
 """, (
     "admin",
     admin_password,
     "Admin",
     "All",
-    1
+    1,
+    0
 ))
 
 conn.commit()
 conn.close()
 
 print("Administrator account verified.")
+
