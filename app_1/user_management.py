@@ -212,7 +212,23 @@ def user_management_page():
         st.success("✅ User updated successfully!")
         st.rerun()  # Rerun the app to reflect the updated user details
 
+#-------------------------------------------------------------------------
+    # Reset User Passwor by Admin users 
 
+    st.markdown("---")
+    st.subheader("🔑 Reset User Password")
+
+    temporary_password = st.text_input("Teporary Password", type="password")
+
+    if st.button("Reset Password"):
+        success, message = reset_user_password(selected_username, temporary_password)
+        if success:
+            st.success(message)
+
+        else:
+            st.error(message)
+
+# -----------------------------------------------------------------------
 
     st.markdown("---")
     st.subheader("🗑️ Delete User")
