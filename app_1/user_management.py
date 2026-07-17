@@ -6,6 +6,7 @@ import streamlit as st
 from authentication.password_utils import hash_password
 
 
+
 from config.paths import DB_PATH
 
 @st.cache_data
@@ -158,6 +159,7 @@ def user_management_page():
 
     st.dataframe(users, use_container_width=True)
 
+#-----------------------------------------------------------------------------------
     st.markdown("---")
     st.subheader("➕ Create New User")
 
@@ -184,7 +186,7 @@ def user_management_page():
             st.rerun()
         else:
             st.error("❌ Username already exists. Please choose a different username.")
-      
+#-------------------------------------------------------------------------------------------     
     st.markdown("---")
     st.subheader("✏️ Edit User")
    
