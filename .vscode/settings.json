@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./app"
-    ]
+    ],
+    "workbench.tree.indent": 10
 }
