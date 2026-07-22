@@ -1,5 +1,5 @@
 
-from app_1.user_management import reset_user_password
+from app.user_management import reset_user_password
 
 
 result = reset_user_password(

@@ -22,7 +22,7 @@ from scripts.customer_lifetime_value import calculate_clv
 from scripts.insights import generate_insights
 from authentication.logout import logout
 from authentication.permissions import has_permission
-from app_1.user_management import user_management_page
+from app.user_management import user_management_page
 from reports.export_excel import export_to_excel
 from reports.export_pdf import export_to_pdf
 from authentication.password_management import change_my_password
