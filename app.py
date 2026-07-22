@@ -1,7 +1,8 @@
 import streamlit as st
 
 from authentication.login import login_screen
-from sales_dashboard import main as dashboard_main
+from app.sales_dashboard import main as dashboard_main
+
 
 
 
